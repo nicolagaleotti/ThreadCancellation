@@ -36,7 +36,7 @@ namespace ThreadCancellation
             Console.WriteLine($"t2 Stato:{t2.Status}");
             Console.WriteLine($"t3 Stato:{t3.Status}");
 
-            Thread.Sleep(1000);
+            Thread.Sleep(10000);
 
             Console.WriteLine($"t1 Stato:{t1.Status}");
             Console.WriteLine($"t2 Stato:{t2.Status}");
@@ -49,42 +49,35 @@ namespace ThreadCancellation
 
         private static int Print(bool isEven, CancellationToken token)
         {
-            try
+            int total = 0;
+            Console.WriteLine($"id={Task.CurrentId}. Is thread pool thread {Thread.CurrentThread.IsThreadPoolThread}");
+            if (isEven)
             {
-                int total = 0;
-                Console.WriteLine($"id={Task.CurrentId}. Is thread pool thread {Thread.CurrentThread.IsThreadPoolThread}");
-                if (isEven)
+                for (int i = 2; i < 100; i += 2)
                 {
-                    for (int i = 2; i < 100; i += 2)
+                    if (token.IsCancellationRequested)
                     {
-                        if (token.IsCancellationRequested)
-                        {
-                            Console.WriteLine("E' richiesto un annullamento");
-                            token.ThrowIfCancellationRequested();
-                        }
-                        Console.WriteLine($"CurrentTask id={Task.CurrentId}. Value={i}.");
-                        total++;
+                        Console.WriteLine("E' richiesto un annullamento");
+                        token.ThrowIfCancellationRequested();
                     }
+                    Console.WriteLine($"CurrentTask id={Task.CurrentId}. Value={i}.");
+                    total++;
                 }
-                else
-                {
-                    for (int i = 1; i < 100; i += 2)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            Console.WriteLine("E' richiesto un annullamento");
-                            token.ThrowIfCancellationRequested();
-                        }
-                        Console.WriteLine($"CurrentTask id={Task.CurrentId}. Value={i}.");
-                        total++;
-                    }
-                }
-                return total;
             }
-            catch (OperationCanceledException ex)
+            else
             {
-                return -1;
+                for (int i = 1; i < 100; i += 2)
+                {
+                    if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("E' richiesto un annullamento");
+                        token.ThrowIfCancellationRequested();
+                    }
+                    Console.WriteLine($"CurrentTask id={Task.CurrentId}. Value={i}.");
+                    total++;
+                }
             }
+            return total;
         }
     }
 }
